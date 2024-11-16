@@ -1,0 +1,28 @@
+import json
+import boto3
+from datetime import datetime
+
+s3 = boto3.client('s3')
+bucket_name = "emirates-private-store"
+prefix = "staging/daily-logs/"
+
+def lambda_handler(event, context):
+    # Simulating log data retrieval from CloudWatch (you may adjust based on actual source)
+    log_data = json.dumps({
+        "log_events": [
+            "Sample log 1",
+            "Sample log 2",
+            "Sample log 3"
+        ]
+    })
+    
+    # Create a filename with date and time
+    filename = prefix + "log_" + datetime.now().strftime("%Y-%m-%dT%H-%M-%S") + ".json"
+    
+    # Store log data in the S3 bucket
+    s3.put_object(Bucket=bucket_name, Key=filename, Body=log_data)
+    
+    return {
+        'statusCode': 200,
+        'body': json.dumps('Logs stored in S3!')
+    }

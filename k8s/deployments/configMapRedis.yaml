@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: redis-config
+  namespace: staging
+data:
+  redis-endpoint: redis-replication-group-staging.h1zygx.ng.0001.mec1.cache.amazonaws.com:6379

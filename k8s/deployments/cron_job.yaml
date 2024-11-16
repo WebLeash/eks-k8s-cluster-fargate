@@ -1,0 +1,18 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: my-cronjob
+  namespace: staging
+spec:
+  schedule: "0 0 * * *"  # Runs at midnight
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: my-cronjob-container
+            image: git.snowfall.se:4567/snowfall/monorepo/emirates-emirates-bff-cron/accrual:769.0.0
+            env:
+            - name: DATABASE_URL
+              value: "postgresql+asyncpg://rds_user_name_sandbox:rds_password_sandbox@uae-staging.ch0csuc02mlz.me-central-1.rds.amazonaws.com:5432/emirates_bff"
+          restartPolicy: OnFailure

@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: psql-client
+  namespace: staging
+spec:
+  containers:
+    - name: postgress-client-staging
+      image: bitnami/postgresql:latest
+      stdin: true
+      tty: true
+      env:
+        - name: POSTGRES_PASSWORD
+          value: "dummy_password"  # This can be anything since we're not using the server feature, just the client.
+        - name: POSTGRES_HOST_AUTH_METHOD
+          value: "trust"  # Allows connections without a password for testing purposes.

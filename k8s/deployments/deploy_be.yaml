@@ -1,0 +1,114 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-backend-app
+  namespace: staging
+  labels:
+    app: my-backend-app
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: my-backend-app
+  template:
+    metadata:
+      labels:
+        app: my-backend-app
+    spec:
+      containers:
+      - name: my-backend-app-container
+        image: git.snowfall.se:4567/snowfall/monorepo/emirates/emirates-bff:790.0.0
+        ports:
+        - containerPort: 8001  # Port used by the backend service
+        env:
+        - name: ENV_NAME
+          value: "development"
+        - name: CONTENT_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: emirates-bff-secrets
+              key: content_api_key
+        - name: JWT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: emirates-bff-secrets
+              key: jwt_secret
+        - name: STRIPE_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: emirates-bff-secrets
+              key: stripe_api_key
+        - name: APIGEE_OAUTH_USER
+          valueFrom:
+            secretKeyRef:
+              name: emirates-bff-secrets
+              key: apigee_oauth_user
+        - name: APIGEE_OAUTH_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: emirates-bff-secrets
+              key: apigee_oauth_password
+        - name: POSTGRES_HOST
+          valueFrom:
+            secretKeyRef:
+              name: emirates-bff-secrets
+              key: postgres_host
+        - name: POSTGRES_PORT
+          valueFrom:
+            secretKeyRef:
+              name: emirates-bff-secrets
+              key: postgres_port
+        - name: POSTGRES_USER
+          valueFrom:
+            secretKeyRef:
+              name: emirates-bff-secrets
+              key: postgres_user
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: emirates-bff-secrets
+              key: postgres_password
+        - name: POSTGRES_DATABASE
+          valueFrom:
+            secretKeyRef:
+              name: emirates-bff-secrets
+              key: postgres_database
+        - name: APIGEE_ACCESS_TOKEN_URL
+          value: "https://api.stg.emirates.dev/oauth/v1/token"
+        - name: APIGEE_PURCHASE_URL
+          value: "https://api.stg.emirates.dev/partner/loyalty/members/v1/profiles/airpurchases/redemption_rail"
+        - name: SNOWFALL_LOGIN_REDIRECT_URL
+          value: "https://skywardsrail.junction.dev/api/auth/callback/okta"
+        - name: LOG_LENS_URL
+          value: "https://loyaltyservices.sit.emirates.dev/log-collector/v1/logs"
+        - name: HTTP_ADDRESS
+          value: "0.0.0.0"
+        - name: FORWARDED_ALLOWED_IPS
+          value: "0.0.0.0"
+        - name: APIGEE_RETRIEVE_PROFILE_URL
+          value: "https://api.stg.emirates.dev/partner/loyalty/members/v1/profiles/basic/retrieve"
+        - name: SSO_EXPECTED_ISSUER
+          value: "https://authuat.emirates.dev/oauth2/ausfs9xvduhmplOrT0h7"
+        - name: SSO_EXPECTED_CID
+          value: "0oa25n0l4tl3caF4L0h8"
+        - name: APIGEE_SSO_TOKEN_URL
+          value: "https://api.stg.emirates.dev/loyalty/identity/v2/ssotoken"
+        - name: APIGEE_VALIDATION_URL
+          value: "https://api.stg.emirates.dev/partner/loyalty/transactions/v1/partners/SNFL/validateRedemption"
+        - name: CORS_ORIGINS
+          value: "[\"localhost:3000\", \"https://skywardsrail.junction.dev\"]"
+        - name: CONTENT_API_HOST
+          value: "SANDBOX"
+        - name: DATABASE_URL
+          value: "postgresql+asyncpg://rds_user_name_sandbox:rds_password_sandbox@uae-staging.ch0csuc02mlz.me-central-1.rds.amazonaws.com:5432/emirates_bff"
+        - name: REDIS_DSN
+          value: "redis://redis-replication-group-staging.h1zygx.ng.0001.mec1.cache.amazonaws.com:6379"
+        resources:
+          requests:
+            cpu: "500m"
+            memory: "512Mi"
+          limits:
+            cpu: "1000m"
+            memory: "1Gi"
+      imagePullSecrets:
+        - name: gitlab-registry-secret

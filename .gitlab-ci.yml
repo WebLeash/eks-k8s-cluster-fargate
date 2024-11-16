@@ -1,0 +1,112 @@
+stages:
+  - plan
+  - apply
+  - configure_cluster
+  - create_database
+  - create_namespace
+
+variables:
+  AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+  AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+  AWS_DEFAULT_REGION: "me-central-1"
+
+nomad cluster performance plan:
+  image: git.snowfall.se:4567/devops/terraform_runner:latest
+  stage: plan
+  script:
+    - cd infra
+    - terraform init
+    - terraform workspace list
+    - terraform workspace select sandbox-eks
+    - export TF_VAR_db_username_staging="${DB_USERNAME_STAGING}"
+    - export TF_VAR_db_password_staging="${DB_PASSWORD_STAGING}"
+    - export TF_VAR_db_password_prod="${DB_PASSWORD_PROD}"
+    - export TF_VAR_db_username_prod="${DB_USERNAME_PROD}"
+    - export TF_VAR_rds_username_master_prod="${RDS_USER_MASTER_PROD}"
+    - export TF_VAR_rds_password_master_prod="${RDS_PASSWORD_MASTER_PROD}"
+    - export TF_VAR_rds_master_password_staging="${DB_PASSWORD_MASTER}"
+    - export TF_VAR_rds_master_username_staging="${DB_USERNAME_MASTER}"
+    - terraform plan 
+  tags:
+    - docker
+  rules:
+    - if: "$CI_MERGE_REQUEST_IID" # Only on MR
+
+nomad cluster performance apply:
+  image: git.snowfall.se:4567/devops/terraform_runner:latest
+  stage: apply
+  script:
+    - cd infra
+    - terraform init
+    - terraform workspace list
+    - terraform workspace select sandbox-eks
+    - export TF_VAR_db_username_staging="${DB_USERNAME_STAGING}"
+    - export TF_VAR_db_password_staging="${DB_PASSWORD_STAGING}"
+    - export TF_VAR_db_password_prod="${DB_PASSWORD_PROD}"
+    - export TF_VAR_db_username_prod="${DB_USERNAME_PROD}"
+    - export TF_VAR_rds_username_master_prod="${RDS_USER_MASTER_PROD}"
+    - export TF_VAR_rds_password_master_prod="${RDS_PASSWORD_MASTER_PROD}"
+    - export TF_VAR_rds_master_password_staging="${DB_PASSWORD_MASTER}"
+    - export TF_VAR_rds_master_username_staging="${DB_USERNAME_MASTER}"
+    - terraform apply --auto-approve
+  artifacts:
+    paths:
+      - rds_endpoint.txt
+  tags:
+    - docker
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH # on Merge to Main#
+
+
+configure cluster create namespace:
+  image: git.snowfall.se:4567/devops/tools/multi-purpose:latest
+  stage: configure_cluster
+  script:
+    - exit 0 # Do this manually
+    - export AWS_REGION="me-central-1"
+    - echo "Setup the kubeconfig"
+    - aws eks update-kubeconfig --region me-central-1 --name eks-uae-cluster-terraform
+    - mkdir -p artifacts
+    # Copy kubeconfig file to the artifacts directory
+    - cp /root/.kube/config artifacts/kubeconfig
+    - crwd=$(pwd)
+    - export KUBECONFIG="$(crwd)/artifacts/kubeconfig"
+    - kubectl create ns staging
+    - kubectl create ns production
+  tags:
+    - docker
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH # on Merge to Main#
+  when: 
+    manual
+
+
+configure cluster database:
+  image: git.snowfall.se:4567/devops/tools/multi-purpose:latest
+  stage: configure_cluster
+  script:
+    - exit 0 # Do this manually
+    - export AWS_REGION="me-central-1"
+    - echo "Setup the kubeconfig"
+    - aws eks update-kubeconfig --region me-central-1 --name eks-uae-cluster-terraform
+    - export KUBECONFIG="/root/.kube/config"
+    - mkdir -p artifacts
+    - cp /root/.kube/config artifacts/kubeconfig
+    - crwd=$(pwd)
+    - export KUBECONFIG="$(crwd)/artifacts/kubeconfig"
+#------------------------------------------------------------------------------------------
+#--- Work in progress to get this working so it created emirates_bff db.
+    - sed -i "s/DB_USERNAME_PROD/${DB_USERNAME_PROD}/g" k8s/postgresql-sql-scripts-production.yaml
+    - sed -i "s/DB_PASSWORD_PROD/${DB_PASSWORD_PROD}/g" k8s/postgresql-sql-scripts-production.yaml
+    - cat k8s/postgresql-sql-scripts-production.yaml
+    - kubectl create secret generic db-credentials-production -n production --from-literal=DB_USERNAME_PROD="${DB_USERNAME_PROD}" --from-literal=DB_PASSWORD_PROD="${DB_PASSWORD_PROD}" --from-literal=PROD_HOST="${PROD_HOST}"
+    - kubectl create secret generic db-credentials-staging -n staging --from-literal=DB_USERNAME_PROD="${DB_USERNAME_STAGING}" --from-literal=DB_PASSWORD_PROD="${DB_PASSWORD_STAGING}" --from-literal=STAGING_HOST="${STAGING_HOST}"
+    - echo "Deploying PostgreSQL client pod to execute SQL commands"
+    - kubectl apply -f k8s/rendered-postgresql-sql-scripts-production.yaml
+#    - kubectl apply -f k8s/postgresql-db-staging.yaml
+    - kubectl apply -f k8s/postgresql-db-production.yaml
+  tags:
+    - docker
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH # on Merge to Main#
+
