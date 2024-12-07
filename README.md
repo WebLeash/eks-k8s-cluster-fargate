@@ -206,13 +206,13 @@ While AWS Fargate brings significant operational and cost advantages by providin
     ```
 3) **Add any application level secrets** - Do this for each namespace. Kubernetes has it's own secret store.
    ```bash
-     kubectl create secret generic emirates-bff-secrets \
+     kubectl create secret generic company-bff-secrets \
       --namespace=staging \
       --from-literal=apigee_oauth_password=****************** \
       --from-literal=apigee_oauth_user=*********************** \
       --from-literal=content_api_key=********************************* \
       --from-literal=jwt_secret=****************************************************************** \
-      --from-literal=postgres_database=emirates_bff \
+      --from-literal=postgres_database=company_bff \
       --from-literal=postgres_host=uae-staging.ch0csuc02mlz.me-central-1.rds.amazonaws.com \
       --from-literal=postgres_password=rds_password_sandbox \
       --from-literal=postgres_port=5432 \
@@ -291,29 +291,29 @@ data:
         Name cloudwatch
         Match my-app-staging*
         region me-central-1
-        log_group_name /eks/fargate/emirates-front-end/staging
-        log_stream_name {emirates_frontend}
+        log_group_name /eks/fargate/company-front-end/staging
+        log_stream_name {company_frontend}
         auto_create_group true
     [OUTPUT]
         Name cloudwatch
         Match my-app-backend*
         region me-central-1
-        log_group_name /eks/fargate/emirates-back-end/staging
-        log_stream_name {emirates_backend}
+        log_group_name /eks/fargate/company-back-end/staging
+        log_stream_name {company_backend}
         auto_create_group true
     [OUTPUT]
         Name cloudwatch
         Match my-app-prod*
         region me-central-1
-        log_group_name /eks/fargate/emirates-front-end/production
-        log_stream_name {emirates_frontend}
+        log_group_name /eks/fargate/company-front-end/production
+        log_stream_name {company_frontend}
         auto_create_group true
     [OUTPUT]
         Name cloudwatch
         Match my-app-backend-prod*
         region me-central-1
-        log_group_name /eks/fargate/emirates-back-end/production
-        log_stream_name {emirates_backend}
+        log_group_name /eks/fargate/company-back-end/production
+        log_stream_name {company_backend}
         auto_create_group true
 ````
 ### The log groups have been set up in cloudwatch (sandbox account)
