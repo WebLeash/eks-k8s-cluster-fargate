@@ -47,7 +47,7 @@ alias k='kubectl'
 ````
 ### Statefile
 We use an s3 bucket to store the statefile, this is designed so teams can deploy changes safely across the AWS platform, knowing the statefile is always kepts in line with actual AWS state. **Please ensure the integrity of the statefile.**
-[**backend.tf**](https://git.snowfall.se/DevOps/eks-cluster-fargate-terrfaorm/-/blob/main/backend.tf?ref_type=heads)
+[**backend.tf**](https://git.company.se/DevOps/eks-cluster-fargate-terrfaorm/-/blob/main/backend.tf?ref_type=heads)
 
 ```terraform
 terraform {
@@ -198,7 +198,7 @@ While AWS Fargate brings significant operational and cost advantages by providin
  2) **Add Docker Registry credentials** - Do this for each namespace.
     ```bash 
     kubectl create secret docker-registry gitlab-registry-secret \
-    --docker-server="git.snowfall.se:4567" \
+    --docker-server="git.company.se:4567" \
     --docker-username="nathan.stott" \
     --docker-password="<pat-token>" \
     --docker-email="" \
@@ -220,7 +220,7 @@ While AWS Fargate brings significant operational and cost advantages by providin
        --from-literal=stripe_api_key=********************
       ```
   4. **Deploy application** - Front End container / Backend Container
-    Assuming the project has been [**cloned**](git@git.snowfall.se:DevOps/eks-cluster-fargate-terrfaorm.git) run the below commands to deploy the applications.
+    Assuming the project has been [**cloned**](git@git.company.se:DevOps/eks-cluster-fargate-terrfaorm.git) run the below commands to deploy the applications.
      ```bash
      kubectl apply -f k8s/deployments/deploy_fe.yaml
      kubectl apply -f k8s/deploymets/deploy_be.yaml 
