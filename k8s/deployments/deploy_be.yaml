@@ -23,7 +23,7 @@ spec:
         env:
         - name: ENV_NAME
           value: "development"
-        - name: CONTENT_API_KEY
+        - name: EMIRATES_CONTENT_API_KEY
           valueFrom:
             secretKeyRef:
               name: company-bff-secrets
