@@ -25,7 +25,7 @@ spec:
           value: "staging"
         - name: PORT
           value: "3000"
-        - name: BFF_API_BASE_URL
+        - name: BFF_API_BASE_URL_EMIRATES_SECRETS
           value: "https://api.skywardsrail.junction.dev"
         - name: PUBLIC_SENTRY_DSN
           value: "https://ef15f1238446cd1d5c38ab2890633241@sentry.snowfall.se/234"
