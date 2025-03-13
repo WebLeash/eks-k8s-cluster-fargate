@@ -1,4 +1,4 @@
-# ⚙️  eks-cluster-fargate-terraform
+# ⚙️  eks-cluster-fargate-terraform (Emirates Cluster)
 
 [Scaling EKS Fargate](https://towardsaws.com/scaling-your-eks-cluster-using-fargate-979de2263bf5)
 
